@@ -29,6 +29,7 @@ usage() {
 Usage:
   obsidian-safe-cli.sh search "<query>"
   obsidian-safe-cli.sh search-context "<query>"
+  obsidian-safe-cli.sh agent-inbox-list
   obsidian-safe-cli.sh read [--json] "<path>"
   obsidian-safe-cli.sh create "<note-name-or-relative-path>" "<content>"
   obsidian-safe-cli.sh append "<note-name-or-relative-path>" "<content>"
@@ -278,6 +279,41 @@ cmd_search_context() {
   emit_op_event "ok" "search-context" "" "results=$count"
 }
 
+cmd_agent_inbox_list() {
+  local prefix inbox_abs output count abs_file rel_file
+  local -a rel_paths
+
+  prefix="$(normalize_path "$INBOX_PREFIX")"
+  prefix="${prefix%/}/"
+
+  emit_op_event "start" "agent-inbox-list" "$prefix" ""
+  log_action "agent-inbox-list" "$prefix" ""
+
+  inbox_abs="$(resolve_vault_abs_path "$prefix")"
+  if [[ ! -d "$inbox_abs" ]]; then
+    output="[]"
+    printf '%s\n' "$output"
+    emit_op_event "ok" "agent-inbox-list" "$prefix" "results=0"
+    return 0
+  fi
+
+  rel_paths=()
+  while IFS= read -r -d '' abs_file; do
+    rel_file="${abs_file#${inbox_abs%/}/}"
+    rel_paths+=("$rel_file")
+  done < <(find "$inbox_abs" -type f -name '*.md' -print0)
+
+  if [[ "${#rel_paths[@]}" -eq 0 ]]; then
+    output="[]"
+  else
+    output="$(printf '%s\n' "${rel_paths[@]}" | LC_ALL=C sort | jq -Rcs --arg prefix "$prefix" 'split("\n") | map(select(length > 0) | ($prefix + .))')"
+  fi
+
+  printf '%s\n' "$output"
+  count="$(json_array_count_or_zero "$output")"
+  emit_op_event "ok" "agent-inbox-list" "$prefix" "results=$count"
+}
+
 emit_read_json() {
   local path="$1"
   local content="$2"
@@ -395,6 +431,10 @@ main() {
   search-context)
     [[ $# -eq 1 ]] || { usage; exit 1; }
     cmd_search_context "$1"
+    ;;
+  agent-inbox-list)
+    [[ $# -eq 0 ]] || { usage; exit 1; }
+    cmd_agent_inbox_list
     ;;
   read)
     if [[ $# -eq 1 ]]; then

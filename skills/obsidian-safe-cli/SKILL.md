@@ -1,6 +1,6 @@
 ---
 name: obsidian-safe-cli
-description: Enforce least-privilege Obsidian note operations through obsidian-safe-cli.sh with per-note cli-allowed property gating and a minimal 4-command API for weaker models. Use when working in an Obsidian vault that contains private notes and the user wants agent access only to explicitly authorized notes.
+description: Enforce least-privilege Obsidian note operations through obsidian-safe-cli.sh with per-note cli-allowed property gating and a minimal command API for weaker models. Use when working in an Obsidian vault that contains private notes and the user wants agent access only to explicitly authorized notes.
 allowed-tools: Bash(obsidian-safe-cli.sh:*) Read
 ---
 
@@ -22,13 +22,14 @@ Use this skill to operate on Obsidian notes only through `obsidian-safe-cli.sh` 
 
 - Discover allowed notes: `obsidian-safe-cli.sh search "<query>"`
 - Retrieve context snippets from allowed notes: `obsidian-safe-cli.sh search-context "<query>"`
+- List all 'agent inbox' notes: `obsidian-safe-cli.sh agent-inbox-list`
 - Read one allowed note: `obsidian-safe-cli.sh read [--json] "<path>"`
 - Create a new inbox note: `obsidian-safe-cli.sh create "<note-name>" "<content>"`
 - Append to an existing inbox note: `obsidian-safe-cli.sh append "<note-name>" "<content>"`
 
 ## execution flow
 
-1. Start with `obsidian-safe-cli.sh search` or `obsidian-safe-cli.sh search-context`.
+1. Start with `obsidian-safe-cli.sh agent-inbox-list`, `obsidian-safe-cli.sh search`, or `obsidian-safe-cli.sh search-context`.
 2. Read only files returned by allowed search using `obsidian-safe-cli.sh read`.
    Command output is wrapped with `op:start` and `op:ok` lines; use `--json` when structured output is easier.
 3. Use `obsidian-safe-cli.sh create` for first-write and `obsidian-safe-cli.sh append` for follow-up writes.

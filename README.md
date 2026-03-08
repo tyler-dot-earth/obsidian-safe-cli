@@ -40,6 +40,9 @@ obsidian-safe-cli.sh search "positive-match"
 # find line-level context from allowed notes
 obsidian-safe-cli.sh search-context "project alpha"
 
+# list all markdown notes under agent-inbox/
+obsidian-safe-cli.sh agent-inbox-list
+
 # read only if cli-allowed:true on this note (payload is wrapped in op:start/op:ok lines)
 obsidian-safe-cli.sh read "positive-match-allowed.md"
 
@@ -74,16 +77,24 @@ OPENCODE_CONFIG_CONTENT='{
   "permission": { "*": "deny" },
   "agent": {
     "obsidian-safe-cli-only": {
-      "prompt": "Read /path/to/obsidian-safe-cli/skills/obsidian-safe-cli/SKILL.md first. Then use ONLY /path/to/obsidian-safe-cli/skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh commands. Never use any other command.",
+      "prompt": "1. read `./skills/obsidian-safe-cli/SKILL.md`, 2. use like `./skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh agent-inbox-list`",
       "permission": {
         "*": "deny",
         "bash": {
           "*": "deny",
-          "/path/to/obsidian-safe-cli/skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh": "allow",
-          "/path/to/obsidian-safe-cli/skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh *": "allow"
+          "*&&*": "deny",
+          "*||*": "deny",
+          "*;*": "deny",
+          "*|*": "deny",
+          "*$(*": "deny",
+          "./skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh": "allow",
+          "./skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh *": "allow",
+          "/path/to/obsidian-safe-cli/scripts/obsidian-safe-cli.sh": "allow",
+          "/path/to/obsidian-safe-cli/scripts/obsidian-safe-cli.sh *": "allow",
         },
         "read": {
           "*": "deny",
+          "./skills/obsidian-safe-cli/skills/obsidian-safe-cli/SKILL.md": "allow",
           "/path/to/obsidian-safe-cli/skills/obsidian-safe-cli/SKILL.md": "allow"
         },
         "edit": "deny",
@@ -97,5 +108,5 @@ OPENCODE_CONFIG_CONTENT='{
       }
     }
   }
-}' opencode run --model "lmstudio/qwen/qwen3-30b-a3b-2507" --agent obsidian-safe-cli-only "Create a note called test-RANDOM-NUMBER (replace with an actual random number). The content can be anything."
+}' opencode run --model "lmstudio/qwen/qwen3-30b-a3b-2507" --agent obsidian-safe-cli-only "Review any files in the agent inbox. Do any notes relate to each other? Yes/no + which ones + why?"
 ```

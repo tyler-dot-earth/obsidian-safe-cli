@@ -74,6 +74,16 @@ assert_contains "$append_out" 'appended: agent-inbox/ci-note-1.md'
 assert_contains "$append_out" 'op:ok {"phase":"ok","command":"append","target":"agent-inbox/ci-note-1.md","detail":"status=appended"}'
 grep -q "second line" "$note_file" || fail "expected appended content"
 
+echo "running: create nested note for agent-inbox-list coverage"
+"$CLI" create "nested/ci-note-2" "hello nested" >/dev/null
+
+echo "running: agent-inbox-list emits wrappers and sorted json payload"
+list_out="$("$CLI" agent-inbox-list)"
+list_payload="$(printf '%s\n' "$list_out" | sed -n '2p')"
+assert_contains "$list_out" 'op:start {"phase":"start","command":"agent-inbox-list","target":"agent-inbox/","detail":""}'
+printf '%s' "$list_payload" | jq -e 'type=="array" and . == (sort) and index("agent-inbox/ci-note-1.md") != null and index("agent-inbox/nested/ci-note-2.md") != null' >/dev/null || fail "invalid agent-inbox-list payload"
+assert_contains "$list_out" 'op:ok {"phase":"ok","command":"agent-inbox-list","target":"agent-inbox/","detail":"results=2"}'
+
 echo "running: read fallback resolves inbox path and emits wrappers"
 read_out="$("$CLI" read "ci-note-1")"
 assert_contains "$read_out" 'op:start {"phase":"start","command":"read","target":"agent-inbox/ci-note-1.md","detail":"mode=text"}'
