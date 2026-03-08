@@ -58,6 +58,14 @@ All commands emit wrapper lines for easier agent parsing:
 - `op:start {"phase":"start","command":"...","target":"...","detail":"..."}`
 - `op:ok {"phase":"ok","command":"...","target":"...","detail":"..."}`
 
+## testing
+
+Tests run against a mocked [Obsidian CLI](https://help.obsidian.md/cli), so no Obsidian install is required in CI.
+
+```bash
+tests/run.sh
+```
+
 ## OpenCode CLI example
 
 ```bash

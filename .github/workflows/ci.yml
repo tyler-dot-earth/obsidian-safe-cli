@@ -1,0 +1,21 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  shell-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: ensure scripts are executable
+        run: chmod +x tests/mock-obsidian.sh tests/run.sh skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh
+
+      - name: shell syntax check
+        run: bash -n skills/obsidian-safe-cli/scripts/obsidian-safe-cli.sh
+
+      - name: run integration tests with mock obsidian cli
+        run: tests/run.sh
